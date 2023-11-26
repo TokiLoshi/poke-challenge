@@ -28,9 +28,10 @@ const loader = new GLTFLoader();
 loader.load(
 	"models/openpoke.glb",
 	(gltf) => {
-		gltf.scene.scale.set(25, 25, 25);
+		gltf.scene.scale.set(20, 20, 20);
 		console.log(gltf);
 		gltf.scene.position.y = 2;
+		gltf.scene.rotation.y = Math.PI;
 		scene.add(gltf.scene);
 	},
 	undefined,
@@ -46,6 +47,27 @@ const sphere = new THREE.Mesh(
 );
 sphere.position.y = 3;
 scene.add(sphere);
+
+/**
+ * Tree
+ */
+const trees = new THREE.Group();
+const barkGeometry = new THREE.CylinderGeometry(0.5, 0.6, 2, 8);
+const barkMaterial = new THREE.MeshStandardMaterial({
+	color: "#E8D2A6",
+});
+const bark1 = new THREE.Mesh(barkGeometry, barkMaterial);
+bark1.position.set(-5, 1, 2);
+trees.add(bark1);
+const leavesGeometry = new THREE.SphereGeometry(1, 1, 20);
+const leavesMaterial = new THREE.MeshStandardMaterial({
+	color: 0xffff00,
+});
+const leaves1 = new THREE.Mesh(leavesGeometry, leavesMaterial);
+leaves1.position.set(-5, 2.5, 2);
+trees.add(leaves1);
+
+scene.add(trees);
 
 // Floor
 const floor = new THREE.Mesh(
@@ -71,6 +93,11 @@ const sizes = {
 	width: window.innerWidth,
 	height: window.innerHeight,
 };
+
+/**
+ * Fog
+ */
+// scene.fog = new THREE.Fog(0xcccccc, 10, 15);
 
 window.addEventListener("resize", () => {
 	// Update sizes
@@ -99,6 +126,7 @@ const camera = new THREE.PerspectiveCamera(
 camera.position.x = 4;
 camera.position.y = 2;
 camera.position.z = 5;
+
 scene.add(camera);
 
 // Controls
@@ -121,8 +149,6 @@ const clock = new THREE.Clock();
 
 const tick = () => {
 	const elapsedTime = clock.getElapsedTime();
-	// sphere.rotation.x = Math.cos(elapsedTime);
-	sphere.rotation.z = Math.sin(elapsedTime);
 
 	// Update controls
 	controls.update();
