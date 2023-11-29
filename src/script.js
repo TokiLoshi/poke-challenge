@@ -23,6 +23,46 @@ const textureLoader = new THREE.TextureLoader();
 const bricksColorTexture = textureLoader.load("/textures/bricks/color.jpg");
 bricksColorTexture.colorSpace = THREE.SRGBColorSpace;
 
+const bushColor = textureLoader.load("/textures/bushes/color.jpg");
+bushColor.colorSpace = THREE.SRGBColorSpace;
+const bushAmbientOcclusion = textureLoader.load(
+	"/textures/bushes/ambientOcclusion.jpg"
+);
+const bushNormal = textureLoader.load("/textures/bushes/normal.jpg");
+const bushRoughness = textureLoader.load("/textures/bushes/roughness.jpg");
+const bushHeight = textureLoader.load("/textures/bushes/height.jpg");
+
+const grassColor = textureLoader.load("/textures/grass/color.jpg");
+grassColor.colorSpace = THREE.SRGBColorSpace;
+const grassAmbientOcclusion = textureLoader.load(
+	"/textures/grass/ambientOcclusion.jpg"
+);
+const grassNormal = textureLoader.load("/textures/grass/normal.jpg");
+const grassRoughness = textureLoader.load("/textures/grass/roughness.jpg");
+grassColor.repeat.set(8, 8);
+grassAmbientOcclusion.repeat.set(8, 8);
+grassNormal.repeat.set(8, 8);
+grassRoughness.repeat.set(8, 8);
+
+grassColor.wrapS = THREE.RepeatWrapping;
+grassAmbientOcclusion.wrapS = THREE.RepeatWrapping;
+grassNormal.wrapS = THREE.RepeatWrapping;
+grassRoughness.wrapS = THREE.RepeatWrapping;
+
+grassColor.wrapT = THREE.RepeatWrapping;
+grassAmbientOcclusion.wrapT = THREE.RepeatWrapping;
+grassNormal.wrapT = THREE.RepeatWrapping;
+grassRoughness.wrapT = THREE.RepeatWrapping;
+
+const sphereColor = textureLoader.load("/textures/sphere/color.jpg");
+sphereColor.colorSpace = THREE.SRGBColorSpace;
+const sphereAmbientOcclusion = textureLoader.load(
+	"/textures/sphere/ambientOcclusion.jpg"
+);
+const sphereNormal = textureLoader.load("/textures/sphere/normal.jpg");
+const sphereRoughness = textureLoader.load("/textures/sphere/roughness.jpg");
+const sphereHeight = textureLoader.load("/textures/sphere/height.jpg");
+
 /**
  * Model Loader
  */
@@ -43,10 +83,16 @@ loader.load(
 	}
 );
 
-// Temporary sphere
+// Unhatched Pokemon Egg
 const sphere = new THREE.Mesh(
 	new THREE.SphereGeometry(1, 32, 32),
-	new THREE.MeshStandardMaterial({ map: bricksColorTexture, roughness: 0.7 })
+	new THREE.MeshStandardMaterial({
+		map: sphereColor,
+		aoMap: sphereAmbientOcclusion,
+		normalMap: sphereNormal,
+		roughnessMap: sphereRoughness,
+		displacementMap: sphereHeight,
+	})
 );
 sphere.position.y = 3;
 sphere.castShadow = true;
@@ -63,15 +109,21 @@ const barkMaterial = new THREE.MeshStandardMaterial({
 	map: bricksColorTexture,
 });
 
-const leavesGeometry = new THREE.SphereGeometry(1, 1, 20);
+const leavesGeometry = new THREE.SphereGeometry(1.5, 15, 20);
 const leavesMaterial = new THREE.MeshStandardMaterial({
-	color: 0xffff00,
+	map: bushColor,
+	alphaMap: bushAmbientOcclusion,
+	normalMap: bushNormal,
+	// roughnessMap: bushRoughness,
+	displacementMap: bushHeight,
 });
 const bark1 = new THREE.Mesh(barkGeometry, barkMaterial);
 const leaves1 = new THREE.Mesh(leavesGeometry, leavesMaterial);
 leaves1.position.set(-7, 2.5, -4);
 bark1.position.set(-7, 1, -4);
 occupiedCoordinates.push(`${-7},${-4}`);
+bark1.castShadow = true;
+bark1.receiveShadow = true;
 trees.add(bark1, leaves1);
 
 const bark2 = new THREE.Mesh(barkGeometry, barkMaterial);
@@ -126,11 +178,50 @@ const pond = new THREE.Mesh(pondGeometry, pondMaterial);
 pond.position.set(-6, 0.1, 6);
 pond.rotation.x = -Math.PI * 0.5;
 occupiedCoordinates.push(`${-6},${6}`);
+pond.castShadow = true;
+pond.receiveShadow = true;
 scene.add(pond);
+
+/**
+ * Reeds
+ */
+const pondX = -6;
+const pondZ = 6;
+const pondRadius = 3;
+
+const reedMaterial = new THREE.MeshStandardMaterial({
+	color: "#A2C579",
+});
+function addReedsAroundPond(centerX, centerZ, numReeds, clusterRadius) {
+	for (let i = 0; i < numReeds; i++) {
+		// Generate a random height for reed to make it look more realistic
+		const reedHeight = Math.random() * 0.5 + 0.5;
+		const reedGeometry = new THREE.CylinderGeometry(0.02, 0.05, reedHeight, 8);
+		const angle = Math.random() * Math.PI * 2;
+		const distanceFromCenter =
+			pondRadius + clusterRadius + Math.random() * clusterRadius;
+		const reedX = centerX + Math.cos(angle) * distanceFromCenter;
+		const reedZ = centerZ + Math.sin(angle) * distanceFromCenter;
+
+		if (!isOccupied(reedX, reedZ, 0.1)) {
+			const reed = new THREE.Mesh(reedGeometry, reedMaterial);
+			reed.position.set(reedX, 0.5, reedZ);
+			reed.rotation.y = Math.random() * Math.PI * 2;
+			occupiedCoordinates.push(`${reedX},${reedZ}`);
+			reed.castShadow = true;
+			reed.receiveShadow = true;
+			scene.add(reed);
+		}
+	}
+}
+
+addReedsAroundPond(pondX, pondZ, 10, 0.3);
 
 /** Bushes */
 const bushGeometry = new THREE.SphereGeometry(1, 16, 16);
-const bushMaterial = new THREE.MeshStandardMaterial({ color: "#89c854" });
+const bushMaterial = new THREE.MeshStandardMaterial({
+	color: "#89c854",
+});
 
 for (let i = 0; i < 12; i++) {
 	let x, z, angle, radius;
@@ -166,7 +257,12 @@ for (let i = 0; i < 12; i++) {
 // Floor
 const floor = new THREE.Mesh(
 	new THREE.PlaneGeometry(20, 20),
-	new THREE.MeshStandardMaterial({ color: "#a9c388" })
+	new THREE.MeshStandardMaterial({
+		map: grassColor,
+		aoMap: grassAmbientOcclusion,
+		normalMap: grassNormal,
+		roughnessMap: grassRoughness,
+	})
 );
 floor.rotation.x = -Math.PI * 0.5;
 floor.position.y = 0;
@@ -189,7 +285,7 @@ scene.add(ambientLight);
  * Sunlight
  */
 const sunLight = new THREE.DirectionalLight("#b9d5ff", 2);
-sunLight.position.set(4, 5, -2);
+sunLight.position.set(2, 7, -1);
 sunLight.castShadow = true;
 sunLight.shadow.mapSize.width = 1024;
 sunLight.shadow.mapSize.height = 1024;
@@ -272,6 +368,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 sunLight.castShadow = true;
 trees.castShadow = true;
+pond.castShadow = true;
 
 /**
  * Animate
@@ -280,7 +377,8 @@ const clock = new THREE.Clock();
 
 const tick = () => {
 	const elapsedTime = clock.getElapsedTime();
-
+	sphere.position.y = Math.sin(elapsedTime) * 0.2 + 3;
+	sphere.rotation.z = Math.cos(elapsedTime) * 0.2;
 	// Update controls
 	controls.update();
 
