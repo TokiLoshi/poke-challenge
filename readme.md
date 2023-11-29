@@ -22,3 +22,5 @@ Open Pokeball by Casey Tumbers [CC-BY] (https://creativecommons.org/licenses/by/
 Bush Materials, "hedge 001" by [Joao Paulo](https://3dtextures.me/2022/02/24/hedge-001/) on [3DTextures.me](https://3dtextures.me/)
 
 Stylized Stone Floor 005 by [Paolo S](https://3dtextures.me/2022/05/21/stylized-stone-floor-005/) on [3DTextures.me](https://3dtextures.me)
+
+Lapis Lazuli 001 by [Joao Paulo](https://3dtextures.me/2018/08/17/lapis-lazuli-001/)

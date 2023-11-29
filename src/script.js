@@ -63,6 +63,15 @@ const sphereNormal = textureLoader.load("/textures/sphere/normal.jpg");
 const sphereRoughness = textureLoader.load("/textures/sphere/roughness.jpg");
 const sphereHeight = textureLoader.load("/textures/sphere/height.jpg");
 
+const lapisColor = textureLoader.load("/textures/lapis/color.jpeg");
+lapisColor.colorSpace = THREE.SRGBColorSpace;
+const lapisAmbientOcclusion = textureLoader.load(
+	"/textures/lapis/ambientOcclusion.jpeg"
+);
+const lapisNormal = textureLoader.load("/textures/lapis/normal.jpeg");
+const lapisRoughness = textureLoader.load("/textures/lapis/roughness.jpeg");
+const lapisHeight = textureLoader.load("/textures/lapis/height.png");
+
 /**
  * Model Loader
  */
@@ -87,11 +96,13 @@ loader.load(
 const sphere = new THREE.Mesh(
 	new THREE.SphereGeometry(1, 32, 32),
 	new THREE.MeshStandardMaterial({
-		map: sphereColor,
-		aoMap: sphereAmbientOcclusion,
-		normalMap: sphereNormal,
-		roughnessMap: sphereRoughness,
-		displacementMap: sphereHeight,
+		map: lapisColor,
+		transparent: true,
+		aoMap: lapisAmbientOcclusion,
+		normalMap: lapisNormal,
+		roughnessMap: lapisRoughness,
+		displacementMap: lapisHeight,
+		displacementScale: 0.1,
 	})
 );
 sphere.position.y = 3;
@@ -109,13 +120,15 @@ const barkMaterial = new THREE.MeshStandardMaterial({
 	map: bricksColorTexture,
 });
 
-const leavesGeometry = new THREE.SphereGeometry(1.5, 15, 20);
+const leavesGeometry = new THREE.SphereGeometry(1.5, 10, 20);
 const leavesMaterial = new THREE.MeshStandardMaterial({
 	map: bushColor,
+	transparent: true,
 	alphaMap: bushAmbientOcclusion,
 	normalMap: bushNormal,
-	// roughnessMap: bushRoughness,
+	roughnessMap: bushRoughness,
 	displacementMap: bushHeight,
+	displacementScale: 0.1,
 });
 const bark1 = new THREE.Mesh(barkGeometry, barkMaterial);
 const leaves1 = new THREE.Mesh(leavesGeometry, leavesMaterial);
@@ -215,15 +228,21 @@ function addReedsAroundPond(centerX, centerZ, numReeds, clusterRadius) {
 	}
 }
 
-addReedsAroundPond(pondX, pondZ, 10, 0.3);
+addReedsAroundPond(pondX, pondZ, 3, 0.3);
 
 /** Bushes */
 const bushGeometry = new THREE.SphereGeometry(1, 16, 16);
 const bushMaterial = new THREE.MeshStandardMaterial({
-	color: "#89c854",
+	map: sphereColor,
+	transparent: true,
+	aoMap: sphereAmbientOcclusion,
+	normalMap: sphereNormal,
+	roughnessMap: sphereRoughness,
+	displacementMap: sphereHeight,
+	displacementScale: 0.1,
 });
 
-for (let i = 0; i < 12; i++) {
+for (let i = 0; i < 2; i++) {
 	let x, z, angle, radius;
 
 	let collision = false;
