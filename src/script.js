@@ -34,6 +34,7 @@ loader.load(
 		console.log(gltf);
 		gltf.scene.position.y = 2;
 		gltf.scene.rotation.y = Math.PI;
+		gltf.scene.castShadow = true;
 		scene.add(gltf.scene);
 	},
 	undefined,
@@ -48,11 +49,14 @@ const sphere = new THREE.Mesh(
 	new THREE.MeshStandardMaterial({ map: bricksColorTexture, roughness: 0.7 })
 );
 sphere.position.y = 3;
+sphere.castShadow = true;
+sphere.receiveShadow = true;
 scene.add(sphere);
 
 /**
  * Tree
  */
+const occupiedCoordinates = [];
 const trees = new THREE.Group();
 const barkGeometry = new THREE.CylinderGeometry(0.5, 0.6, 2, 8);
 const barkMaterial = new THREE.MeshStandardMaterial({
@@ -67,17 +71,20 @@ const bark1 = new THREE.Mesh(barkGeometry, barkMaterial);
 const leaves1 = new THREE.Mesh(leavesGeometry, leavesMaterial);
 leaves1.position.set(-7, 2.5, -4);
 bark1.position.set(-7, 1, -4);
+occupiedCoordinates.push(`${-7},${-4}`);
 trees.add(bark1, leaves1);
 
 const bark2 = new THREE.Mesh(barkGeometry, barkMaterial);
 const leaves2 = new THREE.Mesh(leavesGeometry, leavesMaterial);
 bark2.position.set(7, 1, 8);
+occupiedCoordinates.push(`${7},${8}`);
 leaves2.position.set(7, 2.5, 8);
 trees.add(bark2, leaves2);
 
 const bark3 = new THREE.Mesh(barkGeometry, barkMaterial);
 const leaves3 = new THREE.Mesh(leavesGeometry, leavesMaterial);
 bark3.position.set(2, 1, -6);
+occupiedCoordinates.push(`${2},${-6}`);
 leaves3.position.set(2, 2.5, -6);
 trees.add(bark3, leaves3);
 
@@ -85,29 +92,68 @@ const bark4 = new THREE.Mesh(barkGeometry, barkMaterial);
 const leaves4 = new THREE.Mesh(leavesGeometry, leavesMaterial);
 leaves4.position.set(-8, 2.5, -8);
 bark4.position.set(-8, 1, -8);
+occupiedCoordinates.push(`${-8},${-8}`);
 trees.add(bark4, leaves4);
 
 scene.add(trees);
+
+// Check distance between two points
+function calculateDistance(x1, z1, x2, z2) {
+	return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(z2 - z1, 2));
+}
+
+function isOccupied(x, z, radius) {
+	console.log(`Checking if is occupied: ${x}, ${z}`);
+	// Check if the coordinates are already occupied
+	for (let i = 0; i < occupiedCoordinates.length; i++) {
+		const [occupiedX, occupiedZ] = occupiedCoordinates[i]
+			.split(",")
+			.map(Number);
+		if (calculateDistance(x, z, occupiedX, occupiedZ) < radius) {
+			console.log("Occupied");
+			return true;
+		}
+	}
+	return false;
+}
+
+/** Pond */
+const pondGeometry = new THREE.CircleGeometry(3, 32);
+const pondMaterial = new THREE.MeshStandardMaterial({
+	color: "#6f9db8",
+});
+const pond = new THREE.Mesh(pondGeometry, pondMaterial);
+pond.position.set(-6, 0.1, 6);
+pond.rotation.x = -Math.PI * 0.5;
+occupiedCoordinates.push(`${-6},${6}`);
+scene.add(pond);
 
 /** Bushes */
 const bushGeometry = new THREE.SphereGeometry(1, 16, 16);
 const bushMaterial = new THREE.MeshStandardMaterial({ color: "#89c854" });
 
-for (let i = 0; i < 5; i++) {
-	const angle = Math.random() * Math.PI * 2;
-	const radius = 3 + Math.random() * 6;
-	const x = Math.cos(angle) * radius;
-	const z = Math.sin(angle) * radius;
+for (let i = 0; i < 12; i++) {
+	let x, z, angle, radius;
 
+	let collision = false;
+	do {
+		angle = Math.random() * Math.PI * 2;
+		radius = 3 + Math.random() * 6;
+		x = Math.cos(angle) * radius;
+		z = Math.sin(angle) * radius;
+		collision = isOccupied(x, z, 3.5);
+	} while (collision);
+	occupiedCoordinates.push(`${x},${z}`);
 	// Create the mesh
 	const bush = new THREE.Mesh(bushGeometry, bushMaterial);
 	bush.castShadow = true;
+	bush.receiveShadow = true;
 
 	// Position
 	bush.position.set(x, 0.3, z);
-	const bushScaleX = Math.random() + 1;
-	const bushScaleY = Math.random() + 1;
-	const bushScaleZ = Math.random() + 1;
+	const bushScaleX = Math.random() * 0.5 + 0.5;
+	const bushScaleY = Math.random() * 0.5 + 0.5;
+	const bushScaleZ = Math.random() * 0.5 + 0.5;
 	bush.scale.set(bushScaleX, bushScaleY, bushScaleZ);
 
 	// Rotation
@@ -142,10 +188,27 @@ scene.add(ambientLight);
 /**
  * Sunlight
  */
-const sunLight = new THREE.DirectionalLight("#b9d5ff", 0.96);
+const sunLight = new THREE.DirectionalLight("#b9d5ff", 2);
 sunLight.position.set(4, 5, -2);
-gui.add(sunLight, "intensity").min(0).max(1).step(0.001).name("moonlight");
+sunLight.castShadow = true;
+sunLight.shadow.mapSize.width = 1024;
+sunLight.shadow.mapSize.height = 1024;
+sunLight.shadow.camera.top = 2;
+sunLight.shadow.camera.right = 2;
+sunLight.shadow.camera.bottom = -2;
+sunLight.shadow.camera.left = -2;
+sunLight.shadow.camera.near = 1;
+sunLight.shadow.camera.far = 6;
+
+floor.receiveShadow = true;
+
+gui.add(sunLight, "intensity").min(0).max(3).step(0.001).name("sunlight");
 scene.add(sunLight);
+
+const sunLightCameraHelper = new THREE.DirectionalLightHelper(sunLight, 1);
+sunLightCameraHelper.visible = false;
+scene.add(sunLightCameraHelper);
+gui.add(sunLightCameraHelper, "visible").name("sunlightHelper");
 
 /**
  * Sizes
