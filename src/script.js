@@ -22,7 +22,15 @@ const scene = new THREE.Scene();
 const textureLoader = new THREE.TextureLoader();
 const bricksColorTexture = textureLoader.load("/textures/bricks/color.jpg");
 bricksColorTexture.colorSpace = THREE.SRGBColorSpace;
+const bricksAmbientOcclusionTexture = textureLoader.load(
+	"/textures/bricks/ambientOcclusion.jpg"
+);
+const bricksNormalTexture = textureLoader.load("/textures/bricks/normal.jpg");
+const bricksRoughnessTexture = textureLoader.load(
+	"/textures/bricks/roughness.jpg"
+);
 
+// load bushes for tree leaf texture
 const bushColor = textureLoader.load("/textures/bushes/color.jpg");
 bushColor.colorSpace = THREE.SRGBColorSpace;
 const bushAmbientOcclusion = textureLoader.load(
@@ -32,6 +40,7 @@ const bushNormal = textureLoader.load("/textures/bushes/normal.jpg");
 const bushRoughness = textureLoader.load("/textures/bushes/roughness.jpg");
 const bushHeight = textureLoader.load("/textures/bushes/height.jpg");
 
+// load grass for floor from haunted house lecture
 const grassColor = textureLoader.load("/textures/grass/color.jpg");
 grassColor.colorSpace = THREE.SRGBColorSpace;
 const grassAmbientOcclusion = textureLoader.load(
@@ -54,6 +63,7 @@ grassAmbientOcclusion.wrapT = THREE.RepeatWrapping;
 grassNormal.wrapT = THREE.RepeatWrapping;
 grassRoughness.wrapT = THREE.RepeatWrapping;
 
+// load spheres for boulders
 const sphereColor = textureLoader.load("/textures/sphere/color.jpg");
 sphereColor.colorSpace = THREE.SRGBColorSpace;
 const sphereAmbientOcclusion = textureLoader.load(
@@ -63,6 +73,7 @@ const sphereNormal = textureLoader.load("/textures/sphere/normal.jpg");
 const sphereRoughness = textureLoader.load("/textures/sphere/roughness.jpg");
 const sphereHeight = textureLoader.load("/textures/sphere/height.jpg");
 
+// Load lapis for center poke egg
 const lapisColor = textureLoader.load("/textures/lapis/color.jpeg");
 lapisColor.colorSpace = THREE.SRGBColorSpace;
 const lapisAmbientOcclusion = textureLoader.load(
@@ -71,6 +82,17 @@ const lapisAmbientOcclusion = textureLoader.load(
 const lapisNormal = textureLoader.load("/textures/lapis/normal.jpeg");
 const lapisRoughness = textureLoader.load("/textures/lapis/roughness.jpeg");
 const lapisHeight = textureLoader.load("/textures/lapis/height.png");
+
+// Load water for pond
+const waterColor = textureLoader.load("/textures/pond/basecolor.jpeg");
+waterColor.colorSpace = THREE.SRGBColorSpace;
+console.log(`Water color: ${waterColor}`);
+const waterAmbientOcclusion = textureLoader.load(
+	"/textures/pond/ambientOcclusion.jpeg"
+);
+const waterNormal = textureLoader.load("/textures/pond/normal.jpeg");
+const waterRoughness = textureLoader.load("/textures/pond/roughness.jpeg");
+const waterHeight = textureLoader.load("/textures/pond/height.png");
 
 /**
  * Model Loader
@@ -118,26 +140,35 @@ const trees = new THREE.Group();
 const barkGeometry = new THREE.CylinderGeometry(0.5, 0.6, 2, 8);
 const barkMaterial = new THREE.MeshStandardMaterial({
 	map: bricksColorTexture,
+	aoMap: bricksAmbientOcclusionTexture,
+	normalMap: bricksNormalTexture,
+	roughnessMap: bricksRoughnessTexture,
 });
 
 const leavesGeometry = new THREE.SphereGeometry(1.5, 10, 20);
 const leavesMaterial = new THREE.MeshStandardMaterial({
 	map: bushColor,
-	transparent: true,
 	alphaMap: bushAmbientOcclusion,
 	normalMap: bushNormal,
 	roughnessMap: bushRoughness,
 	displacementMap: bushHeight,
 	displacementScale: 0.1,
 });
+const barkBorderGeometry = new THREE.CylinderGeometry(0.7, 0.8, 2.1, 8.1);
+const barkBorderMaterial = new THREE.MeshStandardMaterial({
+	color: "#161A30",
+});
 const bark1 = new THREE.Mesh(barkGeometry, barkMaterial);
 const leaves1 = new THREE.Mesh(leavesGeometry, leavesMaterial);
 leaves1.position.set(-7, 2.5, -4);
 bark1.position.set(-7, 1, -4);
-occupiedCoordinates.push(`${-7},${-4}`);
 bark1.castShadow = true;
 bark1.receiveShadow = true;
-trees.add(bark1, leaves1);
+const barkBorder1 = new THREE.Mesh(barkBorderGeometry, barkBorderMaterial);
+barkBorder1.position.set(-7.1, 2.7, -4.1);
+barkBorder1.rotation.x = -Math.PI * 0.5;
+occupiedCoordinates.push(`${-7},${-4}`);
+trees.add(bark1, leaves1, barkBorder1);
 
 const bark2 = new THREE.Mesh(barkGeometry, barkMaterial);
 const leaves2 = new THREE.Mesh(leavesGeometry, leavesMaterial);
@@ -185,7 +216,13 @@ function isOccupied(x, z, radius) {
 /** Pond */
 const pondGeometry = new THREE.CircleGeometry(3, 32);
 const pondMaterial = new THREE.MeshStandardMaterial({
-	color: "#6f9db8",
+	map: waterColor,
+	transparent: true,
+	aoMap: waterAmbientOcclusion,
+	normalMap: waterNormal,
+	roughnessMap: waterRoughness,
+	displacementMap: waterHeight,
+	displacementScale: 0.1,
 });
 const pond = new THREE.Mesh(pondGeometry, pondMaterial);
 pond.position.set(-6, 0.1, 6);
@@ -196,6 +233,20 @@ pond.receiveShadow = true;
 scene.add(pond);
 
 /**
+ * PondBorder
+ */
+const pondBorderGeometry = new THREE.RingGeometry(2.8, 3.1, 32);
+const pondBorderMaterial = new THREE.MeshStandardMaterial({
+	color: "#161A30",
+});
+const pondBorder = new THREE.Mesh(pondBorderGeometry, pondBorderMaterial);
+pondBorder.position.set(-6, 0.1, 6);
+pondBorder.rotation.x = -Math.PI * 0.5;
+pondBorder.castShadow = true;
+pondBorder.receiveShadow = true;
+scene.add(pondBorder);
+
+/**
  * Reeds
  */
 const pondX = -6;
@@ -203,7 +254,7 @@ const pondZ = 6;
 const pondRadius = 3;
 
 const reedMaterial = new THREE.MeshStandardMaterial({
-	color: "#A2C579",
+	color: "#F4D160",
 });
 function addReedsAroundPond(centerX, centerZ, numReeds, clusterRadius) {
 	for (let i = 0; i < numReeds; i++) {
@@ -286,6 +337,10 @@ const floor = new THREE.Mesh(
 floor.rotation.x = -Math.PI * 0.5;
 floor.position.y = 0;
 scene.add(floor);
+
+// scene.fog = new THREE.Fog("#262837", 1, 15);
+// gui.add(scene.fog, "near").min(0).max(15).step(0.001).name("fogNear").on;
+// gui.add(scene.fog, "far").min(0).max(15).step(0.001).name("fogFar");
 
 /**
  * Lights
