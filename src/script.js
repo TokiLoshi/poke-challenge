@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import GUI from "lil-gui";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 
 /**
  * Base
@@ -94,6 +95,21 @@ const waterNormal = textureLoader.load("/textures/pond/normal.jpeg");
 const waterRoughness = textureLoader.load("/textures/pond/roughness.jpeg");
 const waterHeight = textureLoader.load("/textures/pond/height.png");
 
+// Load sky texture
+const skyTexture = textureLoader.load("/textures/sky/color.jpeg");
+skyTexture.colorSpace = THREE.SRGBColorSpace;
+skyTexture.minFilter = THREE.LinearFilter;
+skyTexture.magFilter = THREE.LinearFilter;
+
+const skyAmbientOcclusion = textureLoader.load(
+	"/textures/sky/ambientOcclusion.jpeg"
+);
+const skyNormal = textureLoader.load("/textures/sky/normal.jpeg");
+const skyRoughness = textureLoader.load("/textures/sky/roughness.jpeg");
+const skyHeight = textureLoader.load("/textures/sky/height.png");
+scene.background = skyTexture;
+scene.environment = skyTexture;
+
 /**
  * Model Loader
  */
@@ -154,27 +170,22 @@ const leavesMaterial = new THREE.MeshStandardMaterial({
 	displacementMap: bushHeight,
 	displacementScale: 0.1,
 });
-const barkBorderGeometry = new THREE.CylinderGeometry(0.7, 0.8, 2.1, 8.1);
-const barkBorderMaterial = new THREE.MeshStandardMaterial({
-	color: "#161A30",
-});
+
 const bark1 = new THREE.Mesh(barkGeometry, barkMaterial);
 const leaves1 = new THREE.Mesh(leavesGeometry, leavesMaterial);
-leaves1.position.set(-7, 2.5, -4);
-bark1.position.set(-7, 1, -4);
+leaves1.position.set(-5, 1.8, -4);
+bark1.position.set(-5, 1, -4);
 bark1.castShadow = true;
 bark1.receiveShadow = true;
-const barkBorder1 = new THREE.Mesh(barkBorderGeometry, barkBorderMaterial);
-barkBorder1.position.set(-7.1, 2.7, -4.1);
-barkBorder1.rotation.x = -Math.PI * 0.5;
-occupiedCoordinates.push(`${-7},${-4}`);
-trees.add(bark1, leaves1, barkBorder1);
+
+occupiedCoordinates.push(`${-5},${-4}`);
+trees.add(bark1, leaves1);
 
 const bark2 = new THREE.Mesh(barkGeometry, barkMaterial);
 const leaves2 = new THREE.Mesh(leavesGeometry, leavesMaterial);
 bark2.position.set(7, 1, 8);
 occupiedCoordinates.push(`${7},${8}`);
-leaves2.position.set(7, 2.5, 8);
+leaves2.position.set(7, 1.8, 8);
 trees.add(bark2, leaves2);
 
 const bark3 = new THREE.Mesh(barkGeometry, barkMaterial);
@@ -279,7 +290,8 @@ function addReedsAroundPond(centerX, centerZ, numReeds, clusterRadius) {
 	}
 }
 
-addReedsAroundPond(pondX, pondZ, 3, 0.3);
+addReedsAroundPond(pondX, pondZ, 10, 0.3);
+addReedsAroundPond(pondX, pondZ, 10, 0.6);
 
 /** Bushes */
 const bushGeometry = new THREE.SphereGeometry(1, 16, 16);
@@ -293,7 +305,7 @@ const bushMaterial = new THREE.MeshStandardMaterial({
 	displacementScale: 0.1,
 });
 
-for (let i = 0; i < 2; i++) {
+for (let i = 0; i < 7; i++) {
 	let x, z, angle, radius;
 
 	let collision = false;
@@ -346,7 +358,7 @@ scene.add(floor);
  * Lights
  */
 // Ambient light
-const ambientLight = new THREE.AmbientLight("#ffffff", 0.5);
+const ambientLight = new THREE.AmbientLight("#ffffff", 0.8);
 gui
 	.add(ambientLight, "intensity")
 	.min(0)
@@ -359,7 +371,7 @@ scene.add(ambientLight);
  * Sunlight
  */
 const sunLight = new THREE.DirectionalLight("#b9d5ff", 2);
-sunLight.position.set(2, 7, -1);
+sunLight.position.set(-2, -4, 4);
 sunLight.castShadow = true;
 sunLight.shadow.mapSize.width = 1024;
 sunLight.shadow.mapSize.height = 1024;
@@ -417,7 +429,7 @@ const camera = new THREE.PerspectiveCamera(
 	0.1,
 	100
 );
-camera.position.x = 4;
+camera.position.x = 3;
 camera.position.y = 2;
 camera.position.z = 5;
 
@@ -443,6 +455,7 @@ renderer.shadowMap.enabled = true;
 sunLight.castShadow = true;
 trees.castShadow = true;
 pond.castShadow = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 /**
  * Animate
@@ -451,8 +464,14 @@ const clock = new THREE.Clock();
 
 const tick = () => {
 	const elapsedTime = clock.getElapsedTime();
+	// Time since last interaction
+	const delta = clock.getDelta();
 	sphere.position.y = Math.sin(elapsedTime) * 0.2 + 3;
 	sphere.rotation.z = Math.cos(elapsedTime) * 0.2;
+
+	trees.rotation.z = Math.sin(elapsedTime) * 0.009;
+	trees.rotation.x = Math.cos(elapsedTime) * 0.009;
+
 	// Update controls
 	controls.update();
 
