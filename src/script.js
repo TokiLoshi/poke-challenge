@@ -2,7 +2,6 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import GUI from "lil-gui";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 
 /**
  * Base
@@ -120,6 +119,12 @@ loader.load(
 		gltf.scene.position.y = 2;
 		gltf.scene.rotation.y = Math.PI;
 		gltf.scene.castShadow = true;
+		gltf.scene.traverse((child) => {
+			if (child instanceof THREE.Mesh) {
+				child.castShadow = true;
+				child.receiveShadow = true;
+			}
+		});
 		scene.add(gltf.scene);
 	},
 	undefined,
@@ -351,12 +356,14 @@ const floor = new THREE.Mesh(
 );
 floor.rotation.x = -Math.PI * 0.5;
 floor.position.y = 0;
+floor.receiveShadow = true;
+floor.castShadow = true;
 scene.add(floor);
 
 // Adding blue fog to try and reduce the harshness of the sky
-scene.fog = new THREE.Fog("#96EFFF", 0.5, 35);
-gui.add(scene.fog, "near").min(0).max(15).step(0.001).name("fogNear").on;
-gui.add(scene.fog, "far").min(0).max(15).step(0.001).name("fogFar");
+// scene.fog = new THREE.Fog("#96EFFF", 0.5, 35);
+// gui.add(scene.fog, "near").min(0).max(15).step(0.001).name("fogNear").on;
+// gui.add(scene.fog, "far").min(0).max(15).step(0.001).name("fogFar");
 
 /**
  * Lights
@@ -376,18 +383,21 @@ scene.add(ambientLight);
  */
 // Adating from the haunted house lecture
 const sunLight = new THREE.DirectionalLight("#b9d5ff", 2);
-sunLight.position.set(-2, -4, 4);
+sunLight.position.set(-6, 4, 4);
 sunLight.castShadow = true;
 sunLight.shadow.mapSize.width = 1024;
 sunLight.shadow.mapSize.height = 1024;
-sunLight.shadow.camera.top = 2;
-sunLight.shadow.camera.right = 2;
-sunLight.shadow.camera.bottom = -2;
-sunLight.shadow.camera.left = -2;
-sunLight.shadow.camera.near = 1;
-sunLight.shadow.camera.far = 6;
-
-floor.receiveShadow = true;
+// sunLight.shadow.camera.top = 2;
+// sunLight.shadow.camera.right = 2;
+// sunLight.shadow.camera.bottom = -2;
+// sunLight.shadow.camera.left = -2;
+// sunLight.shadow.camera.near = 1;
+// sunLight.shadow.camera.far = 6;
+sunLight.shadow.camera.near = 0.5;
+sunLight.shadow.camera.far = 50;
+sunLight.shadow.camera.left = -10;
+sunLight.shadow.camera.right = 10;
+sunLight.shadow.camera.top = 10;
 
 gui.add(sunLight, "intensity").min(0).max(3).step(0.001).name("sunlight");
 scene.add(sunLight);
@@ -404,11 +414,6 @@ const sizes = {
 	width: window.innerWidth,
 	height: window.innerHeight,
 };
-
-/**
- * Fog
- */
-// scene.fog = new THREE.Fog(0xcccccc, 10, 15);
 
 window.addEventListener("resize", () => {
 	// Update sizes
@@ -457,10 +462,19 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
  * Shadows
  */
 renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 sunLight.castShadow = true;
 trees.castShadow = true;
 pond.castShadow = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+bark1.castShadow = true;
+leaves1.castShadow = true;
+bark2.castShadow = true;
+leaves2.castShadow = true;
+bark3.castShadow = true;
+leaves3.castShadow = true;
+bark4.castShadow = true;
+leaves4.castShadow = true;
+sphere.castShadow = true;
 
 /**
  * Animate
