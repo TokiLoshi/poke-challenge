@@ -8,7 +8,9 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
  */
 
 // Debug
-const gui = new GUI();
+const gui = new GUI({
+	title: "Control the Poke Sphere",
+});
 
 // Canvas
 const canvas = document.querySelector("canvas.webgl");
@@ -21,16 +23,14 @@ const scene = new THREE.Scene();
  */
 const textureLoader = new THREE.TextureLoader();
 
-// Add bricks texture for tree bark from haunted house class
-const bricksColorTexture = textureLoader.load("/textures/bricks/color.jpg");
-bricksColorTexture.colorSpace = THREE.SRGBColorSpace;
-const bricksAmbientOcclusionTexture = textureLoader.load(
-	"/textures/bricks/ambientOcclusion.jpg"
+// Add bark to trees
+const barkColorTexture = textureLoader.load("/textures/bark/color.jpg");
+barkColorTexture.colorSpace = THREE.SRGBColorSpace;
+const barkAmbientOcclusionTexture = textureLoader.load(
+	"/textures/bark/ambientOcclusion.jpg"
 );
-const bricksNormalTexture = textureLoader.load("/textures/bricks/normal.jpg");
-const bricksRoughnessTexture = textureLoader.load(
-	"/textures/bricks/roughness.jpg"
-);
+const barkNormalTexture = textureLoader.load("/textures/bark/normal.jpg");
+const barkRoughnessTexture = textureLoader.load("/textures/bark/roughness.jpg");
 
 // Load bushes for tree leaf texture
 const bushColor = textureLoader.load("/textures/bushes/color.jpg");
@@ -40,16 +40,16 @@ const bushAmbientOcclusion = textureLoader.load(
 );
 const bushNormal = textureLoader.load("/textures/bushes/normal.jpg");
 const bushRoughness = textureLoader.load("/textures/bushes/roughness.jpg");
-const bushHeight = textureLoader.load("/textures/bushes/height.jpg");
+const bushHeight = textureLoader.load("/textures/bushes/height.png");
 
 // Load grass for floor from haunted house lecture
-const grassColor = textureLoader.load("/textures/grass/color.jpg");
+const grassColor = textureLoader.load("/textures/sphere/color.jpg");
 grassColor.colorSpace = THREE.SRGBColorSpace;
 const grassAmbientOcclusion = textureLoader.load(
-	"/textures/grass/ambientOcclusion.jpg"
+	"/textures/sphere/ambientOcclusion.jpg"
 );
-const grassNormal = textureLoader.load("/textures/grass/normal.jpg");
-const grassRoughness = textureLoader.load("/textures/grass/roughness.jpg");
+const grassNormal = textureLoader.load("/textures/sphere/normal.jpg");
+const grassRoughness = textureLoader.load("/textures/sphere/roughness.jpg");
 grassColor.repeat.set(8, 8);
 grassAmbientOcclusion.repeat.set(8, 8);
 grassNormal.repeat.set(8, 8);
@@ -67,14 +67,14 @@ grassNormal.wrapT = THREE.RepeatWrapping;
 grassRoughness.wrapT = THREE.RepeatWrapping;
 
 // Load spheres texture for boulders
-const sphereColor = textureLoader.load("/textures/sphere/color.jpg");
-sphereColor.colorSpace = THREE.SRGBColorSpace;
-const sphereAmbientOcclusion = textureLoader.load(
-	"/textures/sphere/ambientOcclusion.jpg"
+const coralColor = textureLoader.load("/textures/coral/color.jpg");
+coralColor.colorSpace = THREE.SRGBColorSpace;
+const coralAmbientOcclusion = textureLoader.load(
+	"/textures/coral/ambientOcclusion.jpg"
 );
-const sphereNormal = textureLoader.load("/textures/sphere/normal.jpg");
-const sphereRoughness = textureLoader.load("/textures/sphere/roughness.jpg");
-const sphereHeight = textureLoader.load("/textures/sphere/height.jpg");
+const coralNormal = textureLoader.load("/textures/coral/normal.jpg");
+const coralRoughness = textureLoader.load("/textures/coral/roughness.jpg");
+const coralHeight = textureLoader.load("/textures/coral/height.png");
 
 // Load lapis texture for center poke egg
 const lapisColor = textureLoader.load("/textures/lapis/color.jpeg");
@@ -134,7 +134,7 @@ loader.load(
 );
 
 // Unhatched Pokemon Egg for center of poke ball
-const sphere = new THREE.Mesh(
+const lapisEgg = new THREE.Mesh(
 	new THREE.SphereGeometry(1, 32, 32),
 	new THREE.MeshStandardMaterial({
 		map: lapisColor,
@@ -146,10 +146,23 @@ const sphere = new THREE.Mesh(
 		displacementScale: 0.1,
 	})
 );
-sphere.position.y = 3;
-sphere.castShadow = true;
-sphere.receiveShadow = true;
-scene.add(sphere);
+lapisEgg.material.roughness = 0.34;
+gui
+	.add(lapisEgg.material, "metalness")
+	.min(0)
+	.max(1)
+	.step(0.001)
+	.name("Egg metalness");
+gui
+	.add(lapisEgg.material, "roughness")
+	.min(0)
+	.max(1)
+	.step(0.001)
+	.name("Egg roughness");
+lapisEgg.position.y = 3;
+lapisEgg.castShadow = true;
+lapisEgg.receiveShadow = true;
+scene.add(lapisEgg);
 
 /**
  * Tree
@@ -157,16 +170,16 @@ scene.add(sphere);
 // Array to hold occupied coordinates
 const occupiedCoordinates = [];
 const trees = new THREE.Group();
-// Add tree bark as bricks from haunted house lecture
+// Add tree bark material to trees
 const barkGeometry = new THREE.CylinderGeometry(0.5, 0.6, 2, 8);
 const barkMaterial = new THREE.MeshStandardMaterial({
-	map: bricksColorTexture,
-	aoMap: bricksAmbientOcclusionTexture,
-	normalMap: bricksNormalTexture,
-	roughnessMap: bricksRoughnessTexture,
+	map: barkColorTexture,
+	aoMap: barkAmbientOcclusionTexture,
+	normalMap: barkNormalTexture,
+	roughnessMap: barkRoughnessTexture,
 });
 
-const leavesGeometry = new THREE.SphereGeometry(1.5, 10, 20);
+const leavesGeometry = new THREE.SphereGeometry(1.5, 10, 42);
 const leavesMaterial = new THREE.MeshStandardMaterial({
 	map: bushColor,
 	alphaMap: bushAmbientOcclusion,
@@ -266,6 +279,65 @@ pondBorder.receiveShadow = true;
 scene.add(pondBorder);
 
 /**
+ * Clouds
+ */
+const clouds = new THREE.Group();
+const cloudMaterial = new THREE.MeshStandardMaterial({
+	map: skyTexture,
+	transparent: true,
+});
+const cloud1 = new THREE.Mesh(
+	new THREE.SphereGeometry(1, 24, 24),
+	cloudMaterial
+);
+const cloud2 = new THREE.Mesh(
+	new THREE.SphereGeometry(1, 20, 20),
+	cloudMaterial
+);
+const cloud3 = new THREE.Mesh(
+	new THREE.SphereGeometry(1, 14, 14),
+	cloudMaterial
+);
+cloud1.position.set(-3, 10, 6);
+cloud1.scale.set(1.5, 1.5, 1.5);
+cloud1.castShadow = true;
+cloud1.receiveShadow = true;
+cloud2.position.set(-1.5, 10, 6);
+cloud2.castShadow = true;
+cloud2.receiveShadow = true;
+cloud3.position.set(-4.5, 10, 6);
+cloud3.castShadow = true;
+cloud3.receiveShadow = true;
+clouds.add(cloud1, cloud2, cloud3);
+
+const cloud4 = new THREE.Mesh(
+	new THREE.SphereGeometry(1, 24, 22),
+	cloudMaterial
+);
+const cloud5 = new THREE.Mesh(
+	new THREE.SphereGeometry(1, 20, 18),
+	cloudMaterial
+);
+const cloud6 = new THREE.Mesh(
+	new THREE.SphereGeometry(1, 14, 10),
+	cloudMaterial
+);
+
+cloud4.position.set(3, 10, 6);
+cloud4.scale.set(1.5, 1.5, 1.5);
+cloud4.castShadow = true;
+cloud4.receiveShadow = true;
+cloud5.position.set(1.5, 10, 6);
+cloud5.castShadow = true;
+cloud5.receiveShadow = true;
+cloud6.position.set(4.5, 10, 6);
+cloud6.castShadow = true;
+cloud6.receiveShadow = true;
+clouds.add(cloud1, cloud2, cloud3, cloud4, cloud5, cloud6);
+
+scene.add(clouds);
+
+/**
  * Reeds
  */
 const pondX = -6;
@@ -304,12 +376,12 @@ addReedsAroundPond(pondX, pondZ, 10, 0.6);
 /** Bushes */
 const bushGeometry = new THREE.SphereGeometry(1, 16, 16);
 const bushMaterial = new THREE.MeshStandardMaterial({
-	map: sphereColor,
+	map: coralColor,
 	transparent: true,
-	aoMap: sphereAmbientOcclusion,
-	normalMap: sphereNormal,
-	roughnessMap: sphereRoughness,
-	displacementMap: sphereHeight,
+	aoMap: coralAmbientOcclusion,
+	normalMap: coralNormal,
+	roughnessMap: coralRoughness,
+	displacementMap: coralHeight,
 	displacementScale: 0.1,
 });
 
@@ -474,7 +546,7 @@ bark3.castShadow = true;
 leaves3.castShadow = true;
 bark4.castShadow = true;
 leaves4.castShadow = true;
-sphere.castShadow = true;
+lapisEgg.castShadow = true;
 
 /**
  * Animate
@@ -483,15 +555,17 @@ const clock = new THREE.Clock();
 
 const tick = () => {
 	const elapsedTime = clock.getElapsedTime();
-	// Time since last interaction
-	const delta = clock.getDelta();
-	sphere.position.y = Math.sin(elapsedTime) * 0.2 + 3;
-	sphere.rotation.z = Math.cos(elapsedTime) * 0.2;
+	// Animate the sphere
+	lapisEgg.position.y = Math.sin(elapsedTime) * 0.2 + 3;
+	lapisEgg.rotation.z = Math.cos(elapsedTime) * 0.2;
 	// Animate the leaves
 	leaves1.rotation.z = Math.sin(elapsedTime) * 0.05 + 1.5;
 	leaves2.rotation.z = Math.sin(elapsedTime) * 0.05 + 1.5;
 	leaves3.rotation.z = Math.sin(elapsedTime) * 0.05 + 1.5;
 	leaves4.rotation.z = Math.sin(elapsedTime) * 0.05 + 1.5;
+
+	pondBorder.scale.y = Math.sin(elapsedTime) * 0.05 + 1;
+	pondBorder.scale.z = Math.sin(elapsedTime) * 0.05 + 1;
 
 	// Update controls
 	controls.update();

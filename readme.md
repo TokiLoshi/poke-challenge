@@ -42,3 +42,7 @@ Lapis Lazuli 001 by [Joao Paulo](https://3dtextures.me/2018/08/17/lapis-lazuli-0
 Grass Material, bricks (used as tree bark) and logic adapted from Three.js journey lesson 16, haunted house by Bruno Simon.
 
 Blue Ice001, used for the sky by [Paulo S](https://3dtextures.me/2018/11/28/blue-ice-001/) on [3DTextures.me](https://3dtextures.me)
+
+Bark 007, by [Paolo S](https://3dtextures.me/2022/04/18/bark-007/) on [3DTextures.me](https://3dtextures.me)
+
+Coral 00 1 by [Paolo S](https://3dtextures.me/2019/10/28/coral-001/) on [3DTextures.me](https://3dtextures.me)
