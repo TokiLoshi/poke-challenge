@@ -21,6 +21,8 @@ const scene = new THREE.Scene();
  * Textures
  */
 const textureLoader = new THREE.TextureLoader();
+
+// Add bricks texture for tree bark from haunted house class
 const bricksColorTexture = textureLoader.load("/textures/bricks/color.jpg");
 bricksColorTexture.colorSpace = THREE.SRGBColorSpace;
 const bricksAmbientOcclusionTexture = textureLoader.load(
@@ -31,7 +33,7 @@ const bricksRoughnessTexture = textureLoader.load(
 	"/textures/bricks/roughness.jpg"
 );
 
-// load bushes for tree leaf texture
+// Load bushes for tree leaf texture
 const bushColor = textureLoader.load("/textures/bushes/color.jpg");
 bushColor.colorSpace = THREE.SRGBColorSpace;
 const bushAmbientOcclusion = textureLoader.load(
@@ -41,7 +43,7 @@ const bushNormal = textureLoader.load("/textures/bushes/normal.jpg");
 const bushRoughness = textureLoader.load("/textures/bushes/roughness.jpg");
 const bushHeight = textureLoader.load("/textures/bushes/height.jpg");
 
-// load grass for floor from haunted house lecture
+// Load grass for floor from haunted house lecture
 const grassColor = textureLoader.load("/textures/grass/color.jpg");
 grassColor.colorSpace = THREE.SRGBColorSpace;
 const grassAmbientOcclusion = textureLoader.load(
@@ -54,6 +56,7 @@ grassAmbientOcclusion.repeat.set(8, 8);
 grassNormal.repeat.set(8, 8);
 grassRoughness.repeat.set(8, 8);
 
+// Wrap grass for floor as per haunted house lecture
 grassColor.wrapS = THREE.RepeatWrapping;
 grassAmbientOcclusion.wrapS = THREE.RepeatWrapping;
 grassNormal.wrapS = THREE.RepeatWrapping;
@@ -64,7 +67,7 @@ grassAmbientOcclusion.wrapT = THREE.RepeatWrapping;
 grassNormal.wrapT = THREE.RepeatWrapping;
 grassRoughness.wrapT = THREE.RepeatWrapping;
 
-// load spheres for boulders
+// Load spheres texture for boulders
 const sphereColor = textureLoader.load("/textures/sphere/color.jpg");
 sphereColor.colorSpace = THREE.SRGBColorSpace;
 const sphereAmbientOcclusion = textureLoader.load(
@@ -74,7 +77,7 @@ const sphereNormal = textureLoader.load("/textures/sphere/normal.jpg");
 const sphereRoughness = textureLoader.load("/textures/sphere/roughness.jpg");
 const sphereHeight = textureLoader.load("/textures/sphere/height.jpg");
 
-// Load lapis for center poke egg
+// Load lapis texture for center poke egg
 const lapisColor = textureLoader.load("/textures/lapis/color.jpeg");
 lapisColor.colorSpace = THREE.SRGBColorSpace;
 const lapisAmbientOcclusion = textureLoader.load(
@@ -84,7 +87,7 @@ const lapisNormal = textureLoader.load("/textures/lapis/normal.jpeg");
 const lapisRoughness = textureLoader.load("/textures/lapis/roughness.jpeg");
 const lapisHeight = textureLoader.load("/textures/lapis/height.png");
 
-// Load water for pond
+// Load water texture for pond
 const waterColor = textureLoader.load("/textures/pond/basecolor.jpeg");
 waterColor.colorSpace = THREE.SRGBColorSpace;
 console.log(`Water color: ${waterColor}`);
@@ -95,18 +98,12 @@ const waterNormal = textureLoader.load("/textures/pond/normal.jpeg");
 const waterRoughness = textureLoader.load("/textures/pond/roughness.jpeg");
 const waterHeight = textureLoader.load("/textures/pond/height.png");
 
-// Load sky texture
+// Load sky texture for background
 const skyTexture = textureLoader.load("/textures/sky/color.jpeg");
 skyTexture.colorSpace = THREE.SRGBColorSpace;
+// Trying to reduce blurriness of sky texture
 skyTexture.minFilter = THREE.LinearFilter;
 skyTexture.magFilter = THREE.LinearFilter;
-
-const skyAmbientOcclusion = textureLoader.load(
-	"/textures/sky/ambientOcclusion.jpeg"
-);
-const skyNormal = textureLoader.load("/textures/sky/normal.jpeg");
-const skyRoughness = textureLoader.load("/textures/sky/roughness.jpeg");
-const skyHeight = textureLoader.load("/textures/sky/height.png");
 scene.background = skyTexture;
 scene.environment = skyTexture;
 
@@ -117,6 +114,7 @@ const loader = new GLTFLoader();
 loader.load(
 	"models/openpoke.glb",
 	(gltf) => {
+		// Loading open source poke ball model
 		gltf.scene.scale.set(20, 20, 20);
 		console.log(gltf);
 		gltf.scene.position.y = 2;
@@ -130,7 +128,7 @@ loader.load(
 	}
 );
 
-// Unhatched Pokemon Egg
+// Unhatched Pokemon Egg for center of poke ball
 const sphere = new THREE.Mesh(
 	new THREE.SphereGeometry(1, 32, 32),
 	new THREE.MeshStandardMaterial({
@@ -151,8 +149,10 @@ scene.add(sphere);
 /**
  * Tree
  */
+// Array to hold occupied coordinates
 const occupiedCoordinates = [];
 const trees = new THREE.Group();
+// Add tree bark as bricks from haunted house lecture
 const barkGeometry = new THREE.CylinderGeometry(0.5, 0.6, 2, 8);
 const barkMaterial = new THREE.MeshStandardMaterial({
 	map: bricksColorTexture,
@@ -171,6 +171,7 @@ const leavesMaterial = new THREE.MeshStandardMaterial({
 	displacementScale: 0.1,
 });
 
+// Populate scene with trees
 const bark1 = new THREE.Mesh(barkGeometry, barkMaterial);
 const leaves1 = new THREE.Mesh(leavesGeometry, leavesMaterial);
 leaves1.position.set(-5, 1.8, -4);
@@ -209,6 +210,7 @@ function calculateDistance(x1, z1, x2, z2) {
 	return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(z2 - z1, 2));
 }
 
+// Try to avoid overlapping objects on the scene
 function isOccupied(x, z, radius) {
 	console.log(`Checking if is occupied: ${x}, ${z}`);
 	// Check if the coordinates are already occupied
@@ -246,6 +248,7 @@ scene.add(pond);
 /**
  * PondBorder
  */
+// Trying to add dept to the pond and break up the green textures
 const pondBorderGeometry = new THREE.RingGeometry(2.8, 3.1, 32);
 const pondBorderMaterial = new THREE.MeshStandardMaterial({
 	color: "#161A30",
@@ -269,7 +272,6 @@ const reedMaterial = new THREE.MeshStandardMaterial({
 });
 function addReedsAroundPond(centerX, centerZ, numReeds, clusterRadius) {
 	for (let i = 0; i < numReeds; i++) {
-		// Generate a random height for reed to make it look more realistic
 		const reedHeight = Math.random() * 0.5 + 0.5;
 		const reedGeometry = new THREE.CylinderGeometry(0.02, 0.05, reedHeight, 8);
 		const angle = Math.random() * Math.PI * 2;
@@ -290,6 +292,7 @@ function addReedsAroundPond(centerX, centerZ, numReeds, clusterRadius) {
 	}
 }
 
+// Calling the function to add reeds around the pond in batches
 addReedsAroundPond(pondX, pondZ, 10, 0.3);
 addReedsAroundPond(pondX, pondZ, 10, 0.6);
 
@@ -350,9 +353,10 @@ floor.rotation.x = -Math.PI * 0.5;
 floor.position.y = 0;
 scene.add(floor);
 
-// scene.fog = new THREE.Fog("#262837", 1, 15);
-// gui.add(scene.fog, "near").min(0).max(15).step(0.001).name("fogNear").on;
-// gui.add(scene.fog, "far").min(0).max(15).step(0.001).name("fogFar");
+// Adding blue fog to try and reduce the harshness of the sky
+scene.fog = new THREE.Fog("#96EFFF", 0.5, 35);
+gui.add(scene.fog, "near").min(0).max(15).step(0.001).name("fogNear").on;
+gui.add(scene.fog, "far").min(0).max(15).step(0.001).name("fogFar");
 
 /**
  * Lights
@@ -370,6 +374,7 @@ scene.add(ambientLight);
 /**
  * Sunlight
  */
+// Adating from the haunted house lecture
 const sunLight = new THREE.DirectionalLight("#b9d5ff", 2);
 sunLight.position.set(-2, -4, 4);
 sunLight.castShadow = true;
@@ -468,9 +473,11 @@ const tick = () => {
 	const delta = clock.getDelta();
 	sphere.position.y = Math.sin(elapsedTime) * 0.2 + 3;
 	sphere.rotation.z = Math.cos(elapsedTime) * 0.2;
-
-	trees.rotation.z = Math.sin(elapsedTime) * 0.009;
-	trees.rotation.x = Math.cos(elapsedTime) * 0.009;
+	// Animate the leaves
+	leaves1.rotation.z = Math.sin(elapsedTime) * 0.05 + 1.5;
+	leaves2.rotation.z = Math.sin(elapsedTime) * 0.05 + 1.5;
+	leaves3.rotation.z = Math.sin(elapsedTime) * 0.05 + 1.5;
+	leaves4.rotation.z = Math.sin(elapsedTime) * 0.05 + 1.5;
 
 	// Update controls
 	controls.update();
