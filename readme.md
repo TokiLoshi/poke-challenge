@@ -46,3 +46,5 @@ Blue Ice001, used for the sky by [Paulo S](https://3dtextures.me/2018/11/28/blue
 Bark 007, by [Paolo S](https://3dtextures.me/2022/04/18/bark-007/) on [3DTextures.me](https://3dtextures.me)
 
 Coral 00 1 by [Paolo S](https://3dtextures.me/2019/10/28/coral-001/) on [3DTextures.me](https://3dtextures.me)
+
+Wall Plaster 001 by [Paolo S](https://3dtextures.me/2021/10/30/wall-plaster-001/) on [3DTextures.me](https://3dtextures.me)
