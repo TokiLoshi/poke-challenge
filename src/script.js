@@ -101,10 +101,15 @@ const waterHeight = textureLoader.load("/textures/pond/height.png");
 const skyTexture = textureLoader.load("/textures/sky/color.jpeg");
 skyTexture.colorSpace = THREE.SRGBColorSpace;
 // Trying to reduce blurriness of sky texture
-skyTexture.minFilter = THREE.LinearFilter;
-skyTexture.magFilter = THREE.LinearFilter;
-scene.background = skyTexture;
-scene.environment = skyTexture;
+// skyTexture.minFilter = THREE.LinearFilter;
+// skyTexture.magFilter = THREE.LinearFilter;
+// scene.background = skyTexture;
+// scene.environment = skyTexture;
+
+const wallColor = textureLoader.load("/textures/wall/color.jpeg");
+wallColor.colorSpace = THREE.SRGBColorSpace;
+scene.background = wallColor;
+scene.environment = wallColor;
 
 /**
  * Model Loader
@@ -323,14 +328,14 @@ const cloud6 = new THREE.Mesh(
 	cloudMaterial
 );
 
-cloud4.position.set(3, 10, 6);
+cloud4.position.set(4, 10, -6);
 cloud4.scale.set(1.5, 1.5, 1.5);
 cloud4.castShadow = true;
 cloud4.receiveShadow = true;
-cloud5.position.set(1.5, 10, 6);
+cloud5.position.set(5.5, 10, -6);
 cloud5.castShadow = true;
 cloud5.receiveShadow = true;
-cloud6.position.set(4.5, 10, 6);
+cloud6.position.set(2.5, 10, -6);
 cloud6.castShadow = true;
 cloud6.receiveShadow = true;
 clouds.add(cloud1, cloud2, cloud3, cloud4, cloud5, cloud6);
@@ -566,6 +571,10 @@ const tick = () => {
 
 	pondBorder.scale.y = Math.sin(elapsedTime) * 0.05 + 1;
 	pondBorder.scale.z = Math.sin(elapsedTime) * 0.05 + 1;
+
+	// animate clouds moving in a circle
+	clouds.rotation.y = Math.cos(elapsedTime * 0.1) * -0.5;
+	clouds.rotation.z = Math.sin(elapsedTime * 0.1) * -0.5;
 
 	// Update controls
 	controls.update();
